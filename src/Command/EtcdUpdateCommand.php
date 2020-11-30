@@ -9,14 +9,14 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class EtcdWatchCommand extends Command
+class EtcdUpdateCommand extends Command
 {
     protected function configure()
     {
         $this
-            ->setName('etcd:watch')
+            ->setName('etcd:update')
             ->setDescription(
-                'Watch a key for changes'
+                'Update an existing key with a given value'
             )
             ->addArgument(
                 'key',
@@ -24,42 +24,32 @@ class EtcdWatchCommand extends Command
                 'Key to set'
             )
             ->addArgument(
+                'value',
+                InputArgument::REQUIRED,
+                'Value to set'
+            )->addArgument(
                 'server',
                 InputArgument::OPTIONAL,
-                'Base url of etcd server and the default is http://127.0.0.1:4001'
+                'Base url of etcd server and the default is http://127.0.0.1:2379'
             )->addOption(
-                'recursive',
-                null,
-                InputOption::VALUE_NONE
-            )->addOption(
-                'after-index',
+                'ttl',
                 null,
                 InputOption::VALUE_OPTIONAL,
-                'watch after the given index',
                 0
             );
     }
 
     public function execute(InputInterface $input, OutputInterface $output)
     {
-        $recursive = $input->getOption('recursive');
         $server = $input->getArgument('server');
         $key = $input->getArgument('key');
-        $afterIndex = $input->getOption('after-index');
-        $output->writeln("<info>Watching key `$key`</info>");
+        $value = $input->getArgument('value');
+        $ttl = $input->getOption('ttl');
+        $output->writeln("<info>Update `$value` of `$key`</info>");
         $client = new EtcdClient($server);
-        
-        $query = array('wait' => 'true');
-        
-        if ($recursive) {
-            $query['recursive'] = 'true';
-        }
-        
-        if ($afterIndex) {
-            $query['waitIndex'] = $afterIndex;
-        }
-        
-        $data = $client->get($key, $query);
-        $output->writeln($data);
+        $data = $client->update($key, $value, $ttl);
+
+        $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        echo $json;
     }
 }

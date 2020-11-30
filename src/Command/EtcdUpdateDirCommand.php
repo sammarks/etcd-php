@@ -9,22 +9,24 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class EtcdMkdirCommand extends Command
+class EtcdUpdateDirCommand extends Command
 {
     protected function configure()
     {
         $this
-            ->setName('etcd:mkdir')
+            ->setName('etcd:updatedir')
             ->setDescription(
-                'Make a new directory'
-            )->addArgument(
+                'Update an existing directory'
+            )
+            ->addArgument(
                 'key',
                 InputArgument::REQUIRED,
                 'Key to set'
-            )->addArgument(
+            )
+            ->addArgument(
                 'server',
                 InputArgument::OPTIONAL,
-                'Base url of etcd server and the default is http://127.0.0.1:4001'
+                'Base url of etcd server and the default is http://127.0.0.1:2379'
             )->addOption(
                 'ttl',
                 null,
@@ -38,9 +40,10 @@ class EtcdMkdirCommand extends Command
         $server = $input->getArgument('server');
         $key = $input->getArgument('key');
         $ttl = $input->getOption('ttl');
-        $output->writeln("<info>making directory `$key`</info>");
+        $output->writeln("<info>Update ttl the dir with key `$key`</info>");
         $client = new EtcdClient($server);
-        $data = $client->mkdir($key, $ttl);
+        $data = $client->updateDir($key, $ttl);
+
         $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
         echo $json;
     }

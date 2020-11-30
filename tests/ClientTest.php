@@ -2,40 +2,15 @@
 
 namespace LinkORB\Tests\Component\Etcd;
 
-use LinkORB\Component\Etcd\Client;
-use PHPUnit_Framework_TestCase;
-
-class ClientTest extends PHPUnit_Framework_TestCase
+class ClientTest extends BaseTest
 {
-
     /**
-     * @var Client
+     * @covers LinkORB\Component\Etcd\Client::getVersion
      */
-    protected $client;
-   
-    private $dirname = '/phpunit_test';
-
-    protected function setUp()
+    public function testGetVersion()
     {
-        $this->client = new Client();
-        $this->client->mkdir($this->dirname);
-        $this->client->setRoot($this->dirname);
-        
-    }
-
-    protected function tearDown()
-    {
-        $this->client->setRoot('/');
-        $this->client->rmdir($this->dirname, true);
-    }
-
-    /**
-     * @covers LinkORB\Component\Etcd\Client::doRequest
-     */
-    public function testDoRequest()
-    {
-        $version = $this->client->doRequest('/version');
-        $this->assertStringStartsWith('etcd', $version);
+        $version = $this->client->getVersion('/version');
+        $this->assertArrayHasKey('etcdserver', $version);
     }
 
     /**
